@@ -1,8 +1,5 @@
 <?php
 $template = "<?php
-namespace Dao;
-
-use PDO;
 
 class $nome_dao extends Connection {
 
@@ -47,6 +44,26 @@ class $nome_dao extends Connection {
                 });
     }
 
+  public static function count(\$params = []) {
+        \$parametros = array();
+        \$string_query = array();
+         if(!empty(\$params)){
+        \$keys = array_keys($params);
+	        foreach(\$keys as \$n=>\$i){
+	                \$parametros[':'.\$n] = \$params[\$i];
+	                 array_push(\$string_query, \$i.' = :'.\$n);
+	        }
+    	}
+        \$where = (!empty(\$string_query))? ' WHERE '.implode(' AND ',\$string_query):'';
+        \$query = 'SELECT COUNT(DISTINCT id) as count FROM $nome_tabela '.\$where;
+         return self::query(function(PDO \$conn) use (\$query, \$parametros) {
+                    \$stmt = \$conn->prepare(\$query);
+                    \$stmt->execute(\$parametros);
+                    \$count = \$stmt->fetch(PDO::FETCH_OBJ);
+                    return \$count->count;
+                });
+    }
+
     public static function atualizarParcial($assinatura_update \$campos) {
         \$parametros = array();
         \$parametros[':id'] = \$id;
@@ -87,7 +104,7 @@ class $nome_dao extends Connection {
                 });
     }
 
-    public static function listar(int \$limit = LIMITE_QUERY, int \$offset = 0) {
+    public static function listar( \$offset = 0, \$limit = 50) {
           \$parametros = array(
             ':limit' => \$limit,
             ':offset' => \$offset,
